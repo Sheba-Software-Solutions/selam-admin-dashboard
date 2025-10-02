@@ -21,6 +21,7 @@ import {
   Building2,
   Calendar,
   Clock,
+  DollarSign,
   Edit,
   Globe,
   MoreVertical,
@@ -513,9 +514,23 @@ export function JobManagement() {
                           <Clock className="w-4 h-4" /> {job.employmentType}
                         </span>
                       </div>
-                      <p className="mt-3 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">
+                      <div className="flex flex-col mt-2">
+                      <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                         {job.description}
                       </p>
+                      <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">{job.compensationRange}</span>
+                        </div>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Archive className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {Array.isArray(job.requirements) ? job.requirements.join(", ") : ""}
+                          </span>
+                        </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
