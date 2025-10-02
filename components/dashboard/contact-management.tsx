@@ -36,7 +36,25 @@ export function ContactManagement() {
       setIsLoading(true)
       const response = await apiClient.getContactMessages()
       if (response.success) {
-        setMessages(response.data)
+        // Normalize fields to avoid runtime errors on undefined values
+        const normalized = response.data.map((m) => {
+          const safeName = typeof (m as any).name === "string" ? (m as any).name : ""
+          const safeEmail = typeof (m as any).email === "string" ? (m as any).email : ""
+          const safeSubject = typeof (m as any).subject === "string" ? (m as any).subject : ""
+          const safeMessage = typeof (m as any).message === "string" ? (m as any).message : ""
+          const allowedStatuses = ["NEW", "IN_PROGRESS", "RESOLVED", "DISMISSED"] as const
+          const rawStatus = (m as any).status
+          const safeStatus = allowedStatuses.includes(rawStatus) ? rawStatus : "NEW"
+          return {
+            ...m,
+            name: safeName,
+            email: safeEmail,
+            subject: safeSubject,
+            message: safeMessage,
+            status: safeStatus,
+          } as ContactMessage
+        })
+        setMessages(normalized)
       }
     } catch (error) {
       console.error("Failed to load contact messages:", error)
@@ -51,11 +69,12 @@ export function ContactManagement() {
   }
 
   const filteredMessages = messages.filter((message) => {
+    const q = (searchTerm || "").toLowerCase()
     const matchesSearch =
-      message.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.message.toLowerCase().includes(searchTerm.toLowerCase())
+      (message.name || "").toLowerCase().includes(q) ||
+      (message.email || "").toLowerCase().includes(q) ||
+      (message.subject || "").toLowerCase().includes(q) ||
+      (message.message || "").toLowerCase().includes(q)
 
     const matchesStatus = statusFilter === "all" || message.status === statusFilter
 
@@ -195,10 +214,16 @@ export function ContactManagement() {
                     <div className="flex items-start gap-4">
                       <Avatar className="w-12 h-12">
                         <AvatarFallback className="bg-slate-100 dark:bg-slate-700">
-                          {message.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {(() => {
+                            const initials = (message.name || "")
+                              .split(" ")
+                              .filter(Boolean)
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                          
+                            return initials || "?"
+                          })()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="space-y-2">
@@ -237,14 +262,19 @@ export function ContactManagement() {
                           {selectedMessage && (
                             <div className="space-y-6">
                               <div className="flex items-start gap-4">
-                                <Avatar className="w-16 h-16">
-                                  <AvatarFallback className="bg-slate-100 dark:bg-slate-700 text-lg">
-                                    {selectedMessage.name
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .join("")}
-                                  </AvatarFallback>
-                                </Avatar>
+                                  <Avatar className="w-16 h-16">
+                                    <AvatarFallback className="bg-slate-100 dark:bg-slate-700 text-lg">
+                                      {(() => {
+                                        const initials = (selectedMessage.name || "")
+                                          .split(" ")
+                                          .filter(Boolean)
+                                          .map((n) => n[0])
+                                          .join("")
+                                          .toUpperCase()
+                                        return initials || "?"
+                                      })()}
+                                    </AvatarFallback>
+                                  </Avatar>
                                 <div className="space-y-2">
                                   <h3 className="text-xl font-semibold">{selectedMessage.name}</h3>
                                   <p className="text-slate-600 dark:text-slate-400">{selectedMessage.email}</p>

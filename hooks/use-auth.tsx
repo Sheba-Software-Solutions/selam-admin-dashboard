@@ -49,11 +49,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.login(email, password)
 
       if (response.success) {
-        setUser(response.data)
-        // Note: In a real implementation, the API should return a token
-        // For now, we'll simulate storing a token
-        const mockToken = btoa(`${email}:${Date.now()}`)
-        apiClient.setToken(mockToken)
+        // Be flexible with backend response shape
+        // Prefer response.data.token or response.token when available
+        const anyResp = response as unknown as {
+          token?: string
+          data?: any
+        }
+        const token = anyResp?.token || anyResp?.data?.token
+
+        // Some backends return { data: { user, token } }, others return { data: user, token }
+        const maybeUser = anyResp?.data?.user ?? anyResp?.data
+
+        if (maybeUser) {
+          setUser(maybeUser)
+        }
+
+        if (token && typeof token === "string") {
+          apiClient.setToken(token)
+        } else {
+          // Fallback to a temporary mock token if backend doesn't return one
+          const mockToken = btoa(`${email}:${Date.now()}`)
+          apiClient.setToken(mockToken)
+        }
+
         return true
       }
       return false

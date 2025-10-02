@@ -46,19 +46,27 @@ export function DashboardOverview() {
 
         const jobs = jobsRes.data
         const applications = applicationsRes.data
-        const products = productsRes.data
+        const productsRaw = productsRes.data
         const messages = messagesRes.data
+
+        // Normalize product fields to ensure numeric values for rating/usersCount
+        const products = productsRaw.map((p) => ({
+          ...p,
+          rating: typeof (p as any).rating === "number" ? (p as any).rating : Number((p as any).rating) || 0,
+          usersCount:
+            typeof (p as any).usersCount === "number" ? (p as any).usersCount : Number((p as any).usersCount) || 0,
+        }))
 
         // Calculate statistics
         const activeJobs = jobs.filter((job) => job.isPublished && !job.isArchived).length
         const totalApplicants = applications.length
-        const activeProducts = products.filter((p) => p.status === "ACTIVE" && !p.isArchived).length
+        const activeProductsCount = products.filter((p) => p.status === "ACTIVE" && !p.isArchived).length
         const newMessages = messages.filter((m) => m.status === "NEW").length
 
         setStats({
           activeJobs,
           totalApplicants,
-          activeProducts,
+          activeProducts: activeProductsCount,
           newMessages,
         })
 
@@ -212,21 +220,25 @@ export function DashboardOverview() {
             ) : activeProducts.length === 0 ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">No active products</p>
             ) : (
-              activeProducts.map((product) => (
-                <div key={product.slug} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-slate-900 dark:text-slate-100">{product.name}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-500 dark:text-slate-400">{product.rating.toFixed(1)} ★</span>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
+              activeProducts.map((product) => {
+                const ratingNum = Math.max(0, Math.min(5, Number((product as any).rating ?? 0)))
+                const usersCountNum = Number((product as any).usersCount ?? 0)
+                return (
+                  <div key={product.slug} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{product.name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-slate-500 dark:text-slate-400">{ratingNum.toFixed(1)} ★</span>
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      </div>
                     </div>
+                    <Progress value={(ratingNum / 5) * 100} className="h-2" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {usersCountNum.toLocaleString()} users
+                    </p>
                   </div>
-                  <Progress value={(product.rating / 5) * 100} className="h-2" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {product.usersCount.toLocaleString()} users
-                  </p>
-                </div>
-              ))
+                )
+              })
             )}
           </CardContent>
         </Card>
