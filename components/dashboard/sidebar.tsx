@@ -28,11 +28,11 @@ export function Sidebar({ currentView, onViewChange, user, onLogout }: SidebarPr
       {/* Header */}
       <div className="p-6 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-primary-foreground" />
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+            <img src="/logo.svg" alt="Custom Icon" className="w-16 h-16 text-primary-foreground"/>
           </div>
           <div>
-            <h2 className="font-bold text-slate-900 dark:text-slate-100">Selam Software</h2>
+            <h2 className="font-bold text-slate-900 dark:text-slate-100">Selam Software Solutions</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">Admin Panel</p>
           </div>
         </div>
