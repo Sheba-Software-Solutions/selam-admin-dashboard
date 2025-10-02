@@ -5,15 +5,17 @@ import { Sidebar } from "./sidebar"
 import { DashboardOverview } from "./dashboard-overview"
 import { JobManagement } from "./job-management"
 import { ApplicantTracking } from "./applicant-tracking"
-import { ProjectManagement } from "./project-management"
+import { ProductManagement } from "./product-management"
+import { ContactManagement } from "./contact-management"
 import { RevenueAnalytics } from "./revenue-analytics"
+import type { AdminUser } from "@/lib/api-client"
 
 interface AdminDashboardProps {
-  user: { email: string; name: string } | null
+  user: AdminUser | null
   onLogout: () => void
 }
 
-export type DashboardView = "overview" | "jobs" | "applicants" | "projects" | "revenue"
+export type DashboardView = "overview" | "jobs" | "applicants" | "products" | "contact" | "revenue"
 
 export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [currentView, setCurrentView] = useState<DashboardView>("overview")
@@ -26,8 +28,10 @@ export function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
         return <JobManagement />
       case "applicants":
         return <ApplicantTracking />
-      case "projects":
-        return <ProjectManagement />
+      case "products":
+        return <ProductManagement />
+      case "contact":
+        return <ContactManagement />
       case "revenue":
         return <RevenueAnalytics />
       default:

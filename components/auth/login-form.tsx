@@ -10,23 +10,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building2, Mail, Lock } from "lucide-react"
 
 interface LoginFormProps {
-  onLogin: (email: string, password: string) => void
+  onLogin: (email: string, password: string) => Promise<boolean>
 }
 
 export function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    onLogin(email, password)
-    setIsLoading(false)
+    try {
+      const success = await onLogin(email, password)
+      if (!success) {
+        setError("Invalid email or password")
+      }
+    } catch (error) {
+      setError("Login failed. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -45,6 +52,11 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Email Address
@@ -88,7 +100,9 @@ export function LoginForm({ onLogin }: LoginFormProps) {
             </Button>
           </form>
           <div className="mt-6 text-center">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Demo: Use any email and password to sign in</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Connect to your Selam Backend API to authenticate
+            </p>
           </div>
         </CardContent>
       </Card>
